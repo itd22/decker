@@ -6,6 +6,21 @@ A custom Rust daemon that reads Xbox controller input and translates it into key
 
 Decker allows you to control document viewers using an Xbox/gamepad controller. Perfect for hands-free document navigation while presenting or reading.
 
+### Running the tool
+
+```bash
+# Basic usage
+./builds/decker-znver3
+
+# With logging
+RUST_LOG=info ./builds/decker-znver3
+RUST_LOG=debug ./builds/decker-znver3
+
+# Background operation
+./builds/decker-znver3 &
+```
+
+
 ### Features
 
 - 🎮 Full Xbox controller support via `gilrs`
@@ -77,14 +92,44 @@ Configuration is stored in `~/.config/decker/config.toml`
 ### Default Button Mappings
 
 | Xbox Button | Action | Keyboard |
-|-------------|--------|----------|
-| D-Pad Up    | Scroll up | Up |
-| D-Pad Down  | Scroll down | Down |
-| RB (Right Bumper) | Next page | Right |
+-------------|--------|----------|
+| D-Pad left    | mouse (cursor) left |  |
+| D-Pad right  | mouse (cursor) right |  |
+|RB (Right Bumper) | Next page | Right |
 | LB (Left Bumper) | Previous page | Left |
-| A           | Zoom in | Ctrl+Plus |
-| B           | Zoom out | Ctrl+Minus |
-| Start       | Toggle fullscreen | F11 |
+| LT (left trigger)  |up movment|  mouse
+| RT (left trigger)  | down movment| mouse|
+| start on    | left mouse button pressed ||
+| start off   | left mout button released||
+  A           | anotation is green highlight press/unpress | 2 |
+| B           | anotation is red underline press/unpress | 3 |
+| Y           | anotation is  yellow  Highlight press/unpress |1|
+| X | undo | ctrl-z | 
+
+
+### Analog / Mode-Toggle Controls (updated in 0.0.5)
+
+| Input | Action |
+|-------|--------|
+| **Start** (tap, i.e. press + release) | Toggle **cursor mode** on/off |
+| **Select** (tap, i.e. press + release) | Toggle **line selection mode** on/off |
+| Left stick, while cursor mode is on | Move the mouse cursor left/right |
+| Right stick, while line selection mode is on | Drag-select text left/right |
+| **Z** (left trigger) | Move the mouse **down** (while cursor mode or line selection mode is on) |
+| **RZ** (right trigger) | Move the mouse **up** (while cursor mode or line selection mode is on) |
+
+Tap **Start** once to turn on cursor mode, then use the left stick / Z-RZ
+triggers to freely position the cursor; tap **Start** again to turn it off.
+Tap **Select** once to turn on line selection mode, then use the right
+stick / Z-RZ triggers to drag out a text selection; tap **Select** again to
+turn it off (this also releases the mouse button, ending the drag). With a
+selection made, press **Y** to highlight it in yellow.
+
+> Note: the left stick's Y axis and the right stick's Y axis are still not
+> used for anything — vertical movement comes exclusively from the Z/RZ
+> triggers. Start no longer toggles fullscreen (it's now the cursor-mode
+> toggle), and both modes are now switched with a tap-and-release rather
+> than needing to hold the button down.
 
 ### Custom Configuration
 
@@ -117,19 +162,6 @@ keys = ["Page_Down"]
 
 ## Usage
 
-### Running the Daemon
-
-```bash
-# Basic usage
-./builds/decker-znver3
-
-# With logging
-RUST_LOG=info ./builds/decker-znver3
-RUST_LOG=debug ./builds/decker-znver3
-
-# Background operation
-./builds/decker-znver3 &
-```
 
 ### Supported Actions
 
@@ -137,6 +169,7 @@ RUST_LOG=debug ./builds/decker-znver3
 - `next_page` / `previous_page` - Navigate pages
 - `zoom_in` / `zoom_out` / `zoom_reset` - Zoom controls
 - `toggle_fullscreen` - Toggle fullscreen mode
+- `highlight_yellow` - Highlight the current text selection in yellow (default: Y button)
 - Custom key sequences via `keys` array
 
 ### Systemd Service (Optional)
