@@ -6,6 +6,21 @@ A custom Rust daemon that reads Xbox controller input and translates it into key
 
 Decker allows you to control document viewers using an Xbox/gamepad controller. Perfect for hands-free document navigation while presenting or reading.
 
+### Running the tool
+
+```bash
+# Basic usage
+./builds/decker-znver3
+
+# With logging
+RUST_LOG=info ./builds/decker-znver3
+RUST_LOG=debug ./builds/decker-znver3
+
+# Background operation
+./builds/decker-znver3 &
+```
+
+
 ### Features
 
 - 🎮 Full Xbox controller support via `gilrs`
@@ -117,19 +132,6 @@ keys = ["Page_Down"]
 
 ## Usage
 
-### Running the Daemon
-
-```bash
-# Basic usage
-./builds/decker-znver3
-
-# With logging
-RUST_LOG=info ./builds/decker-znver3
-RUST_LOG=debug ./builds/decker-znver3
-
-# Background operation
-./builds/decker-znver3 &
-```
 
 ### Supported Actions
 
