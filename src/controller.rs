@@ -19,6 +19,14 @@ pub enum ControllerEvent {
     },
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub struct StickState {
+    pub left_x: f32,
+    pub left_y: f32,
+    pub right_x: f32,
+    pub right_y: f32,
+}
+
 pub struct ControllerManager {
     gilrs: Gilrs,
     active_gamepad_id: Option<GamepadId>,
@@ -49,6 +57,28 @@ impl ControllerManager {
             gilrs,
             active_gamepad_id: active_id,
             config,
+        })
+    }
+
+    /// Reads the current (continuous) position of both analog sticks directly
+    /// from gamepad state, rather than waiting for a discrete axis-changed event.
+    /// This is needed for smooth cursor movement / text-selection dragging,
+    /// since gilrs only emits an event when a value *changes*, but we want to
+    /// keep moving the cursor every tick while a stick is held off-center.
+    pub fn stick_state(&mut self) -> Option<StickState> {
+        let id = self.active_gamepad_id?;
+        let gamepad = self.gilrs.gamepad(id);
+
+        let left_x = gamepad.axis_data(Axis::LeftStickX).map(|d| d.value()).unwrap_or(0.0);
+        let left_y = gamepad.axis_data(Axis::LeftStickY).map(|d| d.value()).unwrap_or(0.0);
+        let right_x = gamepad.axis_data(Axis::RightStickX).map(|d| d.value()).unwrap_or(0.0);
+        let right_y = gamepad.axis_data(Axis::RightStickY).map(|d| d.value()).unwrap_or(0.0);
+
+        Some(StickState {
+            left_x,
+            left_y,
+            right_x,
+            right_y,
         })
     }
 

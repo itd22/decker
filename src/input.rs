@@ -1,9 +1,15 @@
 use anyhow::Result;
 use log::info;
+use std::cell::Cell;
 use std::process::Command;
-use crate::action::{Action, PageDirection, ScrollDirection, ZoomDirection};
+use crate::action::{Action, HighlightColor, PageDirection, ScrollDirection, ZoomDirection};
 
-pub struct InputInjector;
+pub struct InputInjector {
+    /// Tracks whether the left mouse button is currently held down for a
+    /// right-stick drag-select, so we only send `mousedown`/`mouseup` once
+    /// per drag rather than on every polling tick.
+    dragging: Cell<bool>,
+}
 
 impl InputInjector {
     pub fn new() -> Result<Self> {
@@ -12,7 +18,9 @@ impl InputInjector {
             .arg("xdotool")
             .output()?;
 
-        Ok(InputInjector)
+        Ok(InputInjector {
+            dragging: Cell::new(false),
+        })
     }
 
     pub fn execute_action(&self, action: &Action) -> Result<()> {
@@ -31,6 +39,15 @@ impl InputInjector {
             }
             Action::ToggleFullscreen => {
                 self.toggle_fullscreen()?;
+            }
+            Action::MoveCursor { dx, dy } => {
+                self.move_cursor(*dx, *dy)?;
+            }
+            Action::SelectText { dx, dy, active } => {
+                self.select_text(*dx, *dy, *active)?;
+            }
+            Action::Highlight(color) => {
+                self.highlight(color)?;
             }
         }
 
@@ -109,6 +126,63 @@ impl InputInjector {
             .arg("key")
             .arg("F11")
             .output()?;
+
+        Ok(())
+    }
+
+    /// Left stick: move the mouse cursor without pressing any button, so the
+    /// user can freely reposition it (e.g. before starting a selection).
+    fn move_cursor(&self, dx: f32, dy: f32) -> Result<()> {
+        Command::new("xdotool")
+            .arg("mousemove_relative")
+            .arg("--")
+            .arg((dx.round() as i32).to_string())
+            .arg((dy.round() as i32).to_string())
+            .output()?;
+
+        Ok(())
+    }
+
+    /// Right stick: click-and-drag to select text. `active` is true while the
+    /// stick is deflected (drag continues) and false once it returns to
+    /// center (drag ends / mouse button released).
+    fn select_text(&self, dx: f32, dy: f32, active: bool) -> Result<()> {
+        if active {
+            if !self.dragging.get() {
+                info!("Starting text selection drag");
+                Command::new("xdotool").arg("mousedown").arg("1").output()?;
+                self.dragging.set(true);
+            }
+
+            Command::new("xdotool")
+                .arg("mousemove_relative")
+                .arg("--")
+                .arg((dx.round() as i32).to_string())
+                .arg((dy.round() as i32).to_string())
+                .output()?;
+        } else if self.dragging.get() {
+            info!("Ending text selection drag");
+            Command::new("xdotool").arg("mouseup").arg("1").output()?;
+            self.dragging.set(false);
+        }
+
+        Ok(())
+    }
+
+    /// Y button: apply a highlight annotation to the current text selection.
+    /// In Okular, Ctrl+6 activates the yellow Highlighter annotation tool;
+    /// with text already selected via the drag above, this applies the
+    /// highlight directly to that selection.
+    fn highlight(&self, color: &HighlightColor) -> Result<()> {
+        match color {
+            HighlightColor::Yellow => {
+                info!("Highlighting selection: yellow");
+                Command::new("xdotool")
+                    .arg("key")
+                    .arg("ctrl+6")
+                    .output()?;
+            }
+        }
 
         Ok(())
     }

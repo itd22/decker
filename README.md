@@ -6,6 +6,21 @@ A custom Rust daemon that reads Xbox controller input and translates it into key
 
 Decker allows you to control document viewers using an Xbox/gamepad controller. Perfect for hands-free document navigation while presenting or reading.
 
+### Running the tool
+
+```bash
+# Basic usage
+./builds/decker-znver3
+
+# With logging
+RUST_LOG=info ./builds/decker-znver3
+RUST_LOG=debug ./builds/decker-znver3
+
+# Background operation
+./builds/decker-znver3 &
+```
+
+
 ### Features
 
 - 🎮 Full Xbox controller support via `gilrs`
@@ -84,7 +99,17 @@ Configuration is stored in `~/.config/decker/config.toml`
 | LB (Left Bumper) | Previous page | Left |
 | A           | Zoom in | Ctrl+Plus |
 | B           | Zoom out | Ctrl+Minus |
+| Y           | Highlight selection (yellow) | Ctrl+6 |
 | Start       | Toggle fullscreen | F11 |
+
+### Analog Stick Controls (new in 0.0.3)
+
+| Stick | Action |
+|-------|--------|
+| Left stick  | Move the mouse cursor, so you can position the text caret anywhere on the page |
+| Right stick | Click-and-drag to select text — push the stick to extend the selection, return it to center to release |
+
+With the right stick held to select a passage, press **Y** to highlight that selection in yellow.
 
 ### Custom Configuration
 
@@ -117,19 +142,6 @@ keys = ["Page_Down"]
 
 ## Usage
 
-### Running the Daemon
-
-```bash
-# Basic usage
-./builds/decker-znver3
-
-# With logging
-RUST_LOG=info ./builds/decker-znver3
-RUST_LOG=debug ./builds/decker-znver3
-
-# Background operation
-./builds/decker-znver3 &
-```
 
 ### Supported Actions
 
@@ -137,6 +149,7 @@ RUST_LOG=debug ./builds/decker-znver3
 - `next_page` / `previous_page` - Navigate pages
 - `zoom_in` / `zoom_out` / `zoom_reset` - Zoom controls
 - `toggle_fullscreen` - Toggle fullscreen mode
+- `highlight_yellow` - Highlight the current text selection in yellow (default: Y button)
 - Custom key sequences via `keys` array
 
 ### Systemd Service (Optional)

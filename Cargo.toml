@@ -1,6 +1,6 @@
 [package]
 name = "decker"
-version = "0.1.0"
+version = "0.0.3"
 edition = "2021"
 description = "A Rust daemon that reads Xbox controller input and translates it into keyboard shortcuts to control Okular"
 authors = ["itd22"]
@@ -14,7 +14,7 @@ gilrs = "0.10"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-toml = "0.8"
+toml = "0.7"
 dirs = "5.0"
 log = "0.4"
 env_logger = "0.11"

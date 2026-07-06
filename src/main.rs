@@ -25,8 +25,24 @@ async fn main() -> Result<()> {
     let input_injector = input::InputInjector::new()?;
     info!("Input injector ready");
 
+    // Tracks whether the right-stick drag-select is currently active, across
+    // loop iterations, so we know when it ends.
+    let mut right_drag_active = false;
+
     // Main event loop
     loop {
+        // Continuous analog stick handling: left stick moves the cursor,
+        // right stick drags out a text selection. This runs every tick
+        // (independent of discrete controller events) so movement is smooth
+        // while a stick is held off-center.
+        if let Some(stick_state) = controller.stick_state() {
+            for action in action::process_stick_state(&stick_state, &config, &mut right_drag_active) {
+                if let Err(e) = input_injector.execute_action(&action) {
+                    error!("Failed to execute action: {}", e);
+                }
+            }
+        }
+
         match controller.poll_event() {
             Ok(Some(event)) => {
                 match action::process_event(&event, &config) {

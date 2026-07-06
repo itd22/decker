@@ -96,6 +96,15 @@ impl Default for Config {
             },
         );
 
+        button_mappings.insert(
+            "Y".to_string(),
+            ButtonMapping {
+                button: "Y".to_string(),
+                action: "highlight_yellow".to_string(),
+                keys: vec!["ctrl".to_string(), "6".to_string()],
+            },
+        );
+
         Config {
             controlled_program: "okular".to_string(),
             button_mappings,
