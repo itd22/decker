@@ -1,5 +1,5 @@
-use anyhow::{Result, Context};
-use gilrs::{Gilrs, Event, EventType, Button, Axis};
+use anyhow::Result;
+use gilrs::{Gilrs, GamepadId, Event, EventType, Button, Axis};
 use log::{info, warn};
 use serde::{Deserialize, Serialize};
 use crate::config::Config;
@@ -21,13 +21,14 @@ pub enum ControllerEvent {
 
 pub struct ControllerManager {
     gilrs: Gilrs,
-    active_gamepad_id: Option<usize>,
+    active_gamepad_id: Option<GamepadId>,
     config: Config,
 }
 
 impl ControllerManager {
     pub fn new(config: Config) -> Result<Self> {
-        let gilrs = Gilrs::new().context("Failed to initialize Gilrs")?;
+        let gilrs = Gilrs::new()
+            .map_err(|e| anyhow::anyhow!("Failed to initialize Gilrs: {}", e))?;
 
         info!("Available gamepads:");
         let mut active_id = None;
@@ -118,10 +119,10 @@ fn button_to_string(btn: Button) -> String {
         Button::East => "B",
         Button::West => "X",
         Button::North => "Y",
-        Button::LB => "LB",
-        Button::RB => "RB",
-        Button::LT => "LT",
-        Button::RT => "RT",
+        Button::LeftTrigger => "LB",
+        Button::RightTrigger => "RB",
+        Button::LeftTrigger2 => "LT",
+        Button::RightTrigger2 => "RT",
         Button::Select => "Select",
         Button::Start => "Start",
         Button::LeftThumb => "LeftThumb",

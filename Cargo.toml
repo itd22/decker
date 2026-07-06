@@ -20,19 +20,13 @@ log = "0.4"
 env_logger = "0.11"
 anyhow = "1.0"
 thiserror = "1.0"
-
-# Optional xdotool crate versions — either can be enabled via features
-xdotool_03 = { package = "xdotool", version = "0.3", optional = true }
-xdotool_04 = { package = "xdotool", version = "0.4", optional = true }
+xdotool = "0.0.2"
 
 # Optional: DBus integration for KDE
 zbus = { version = "3", optional = true }
 
 [features]
 # Default keeps backwards compatibility with xdotool 0.3
-default = ["xdotool_v03"]
-xdotool_v03 = ["xdotool_03"]
-xdotool_v04 = ["xdotool_04"]
 dbus = ["zbus"]
 
 [profile.release]
