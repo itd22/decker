@@ -1,7 +1,7 @@
 #!/bin/bash
 # Build script for decker v0.1.0
 # Xbox Controller → Okular Control daemon
-# Supports building for different CPU architectures
+# Supports building for different CPU architectures and xdotool crate versions
 
 set -e
 
@@ -52,32 +52,69 @@ EXAMPLES:
 ENVIRONMENT VARIABLES:
     RUSTFLAGS   Additional Rust compiler flags
     CARGO_BUILD_JOBS  Number of parallel build jobs
+    XDTOOL      Choose xdotool crate version to build against: 0.3 or 0.4
+                Example: XDTOOL=0.4 ./build.sh znver3
+
+You can also pass cargo features directly:
+    cargo build --release --no-default-features --features xdotool_v04
 
 EOF
+}
+
+# Compute cargo feature args based on XDTOOL env. Defaults to the crate default (xdotool_v03)
+compute_cargo_feature_args() {
+    local xdot_choice="${XDTOOL:-}"
+
+    if [ -z "$xdot_choice" ]; then
+        # No XDTOOL specified — use default features
+        echo ""
+        return
+    fi
+
+    case "$xdot_choice" in
+        0.4|4)
+            echo "--no-default-features --features xdotool_v04"
+            ;;
+        0.3|3)
+            echo "--no-default-features --features xdotool_v03"
+            ;;
+        *)
+            print_error "Unknown XDTOOL value: $xdot_choice. Valid: 0.3 or 0.4"
+            exit 1
+            ;;
+    esac
 }
 
 build_variant() {
     local variant=$1
     local target_cpu=$2
     local flags=$3
-    
+
     print_info "Building for $variant..."
     print_info "Target CPU: $target_cpu"
-    
+
     export RUSTFLAGS="-C target-cpu=$target_cpu -C opt-level=3 -C lto=thin -C codegen-units=1 $flags"
-    
-    cargo build --release 2>&1 | grep -E "(Compiling|Finished|error|warning:)" || true
-    
+
+    local cargo_feature_args
+    cargo_feature_args=$(compute_cargo_feature_args)
+
+    if [ -z "$cargo_feature_args" ]; then
+        cargo build --release 2>&1 | grep -E "(Compiling|Finished|error|warning:)" || true
+    else
+        # shellcheck disable=SC2086
+        cargo build --release $cargo_feature_args 2>&1 | grep -E "(Compiling|Finished|error|warning:)" || true
+    fi
+
     if [ -f "$BUILD_DIR/release/decker" ]; then
         mkdir -p "$OUTPUT_DIR"
         local output_file="$OUTPUT_DIR/decker-$variant"
         cp "$BUILD_DIR/release/decker" "$output_file"
         chmod +x "$output_file"
-        
+
         # Get file size
         local size=$(du -h "$output_file" | cut -f1)
         print_info "✓ Built: $output_file ($size)"
-        
+
         return 0
     else
         print_error "Build failed for $variant"
@@ -87,9 +124,9 @@ build_variant() {
 
 main() {
     local target=${1:-help}
-    
+
     cd "$PROJECT_DIR"
-    
+
     # Verify Rust is installed
     if ! command -v cargo &> /dev/null; then
         print_error "Rust/Cargo not found. Install from https://rustup.rs/"
@@ -101,7 +138,7 @@ main() {
         print_error "xdotool not found. Install with: sudo apt install xdotool"
         exit 1
     fi
-    
+
     case "$target" in
         znver3)
             build_variant "znver3" "znver3" ""
@@ -121,9 +158,9 @@ main() {
         all)
             print_header "Building all variants..."
             echo ""
-            
+
             local failed=0
-            
+
             build_variant "znver3" "znver3" "" || ((failed++))
             echo ""
             build_variant "znver2" "znver2" "" || ((failed++))
@@ -133,7 +170,7 @@ main() {
             build_variant "v3" "x86-64-v3" "" || ((failed++))
             echo ""
             build_variant "generic" "x86-64" "" || ((failed++))
-            
+
             echo ""
             if [ $failed -eq 0 ]; then
                 print_header "All builds successful!"
