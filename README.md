@@ -97,8 +97,8 @@ Configuration is stored in `~/.config/decker/config.toml`
 | D-Pad right  | mouse (cursor) right |  |
 |RB (Right Bumper) | Next page | Right |
 | LB (Left Bumper) | Previous page | Left |
-| LT (left trigger)  |up movment|  mouse
-| RT (left trigger)  | down movment| mouse|
+| Z | up movment|  mouse|
+| RZ  | down movment| mouse|
 | start on    | left mouse button pressed ||
 | start off   | left mout button released||
   A           | anotation is green highlight press/unpress | 2 |
@@ -106,17 +106,6 @@ Configuration is stored in `~/.config/decker/config.toml`
 | Y           | anotation is  yellow  Highlight press/unpress |1|
 | X | undo | ctrl-z | 
 
-
-### Analog / Mode-Toggle Controls (updated in 0.0.5)
-
-| Input | Action |
-|-------|--------|
-| **Start** (tap, i.e. press + release) | Toggle **cursor mode** on/off |
-| **Select** (tap, i.e. press + release) | Toggle **line selection mode** on/off |
-| Left stick, while cursor mode is on | Move the mouse cursor left/right |
-| Right stick, while line selection mode is on | Drag-select text left/right |
-| **Z** (left trigger) | Move the mouse **down** (while cursor mode or line selection mode is on) |
-| **RZ** (right trigger) | Move the mouse **up** (while cursor mode or line selection mode is on) |
 
 Tap **Start** once to turn on cursor mode, then use the left stick / Z-RZ
 triggers to freely position the cursor; tap **Start** again to turn it off.
